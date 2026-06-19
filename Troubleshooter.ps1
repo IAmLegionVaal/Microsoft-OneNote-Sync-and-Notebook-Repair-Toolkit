@@ -1,0 +1,6 @@
+#requires -Version 5.1
+<# Created by Dewald Pretorius #>
+param([string]$OutputPath)
+if(-not $OutputPath){$OutputPath="$([Environment]::GetFolderPath('Desktop'))\OneNote_Sync_Reports"};New-Item $OutputPath -ItemType Directory -Force|Out-Null
+$proc=Get-Process ONENOTE,onenotem -ErrorAction SilentlyContinue;$cache=@("$env:LOCALAPPDATA\Microsoft\OneNote","$env:LOCALAPPDATA\Packages\Microsoft.Office.OneNote_8wekyb3d8bbwe\LocalState")|Where-Object{Test-Path $_};$events=Get-WinEvent -FilterHashtable @{LogName='Application';StartTime=(Get-Date).AddDays(-7)} -ErrorAction SilentlyContinue|Where-Object Message -match 'OneNote|notebook|sync'|Select-Object -First 50 TimeCreated,Id,ProviderName,Message
+@('MICROSOFT ONENOTE SYNC AND NOTEBOOK DIAGNOSTICS','Created by Dewald Pretorius',"Generated: $(Get-Date)","Running: $([bool]$proc)",'Cache roots:',($cache|Out-String),'Events:',($events|Format-List|Out-String -Width 220),'Guidance: verify account, notebook location, permissions, storage quota, sync status, conflicting sections, and service connectivity before clearing cache.')|Set-Content (Join-Path $OutputPath 'Report.txt') -Encoding UTF8
